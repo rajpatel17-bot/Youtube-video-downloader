@@ -1,7 +1,6 @@
 import {
   Box,
   Flex,
-  FormControl,
   Heading,
   Input,
   Select,
@@ -11,14 +10,37 @@ import {
 } from "@chakra-ui/react";
 import { Image } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
+import axios from "axios";
+import { useState } from "react";
 
-const data = {
-  imageURL:
-    "https://i.ytimg.com/vi/rDdWkKg3-Ms/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAjjamaqeCJeTXSVFnfoMliLVRMbA",
-  name: "SC का बड़ा आदेश - Hindu Muslim पर भड़काऊ बयान दिया, तो आपके साथ ये होगा! The Lallantop Show",
-};
+// const data = {
+//   imageURL:
+//     "https://i.ytimg.com/vi/rDdWkKg3-Ms/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAjjamaqeCJeTXSVFnfoMliLVRMbA",
+//   name: "SC का बड़ा आदेश - Hindu Muslim पर भड़काऊ बयान दिया, तो आपके साथ ये होगा! The Lallantop Show",
+// };
 
 const Body = () => {
+  const [videoURL, setvideoURL] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const config = {
+      headers: {
+        "Content-type": "application/json",
+      },
+    };
+    try {
+      const { data } = await axios.get(
+        "action/fetchVideoInfo",
+        { videoURL: videoURL },
+        config
+      );
+      console.log(data);
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
+
   return (
     <>
       <Flex id="Body" alignItems="center" justifyContent="center" padding={5}>
@@ -65,11 +87,14 @@ const Body = () => {
           To download your Youtube VIDEOS or PLAYLIST, Please provide the link
           below-
         </Heading>
-        <FormControl marginTop={5}>
+
+        <form style={{ marginTop: "1rem" }} onSubmit={handleSubmit}>
           <Input
             type="text"
             placeholder="Please paste your link here!"
             w={"100%"}
+            value={videoURL}
+            onChange={(e) => setvideoURL(e.target.value)}
           />
           <Select placeholder="Select quality" my={5}>
             <option value="option1">144p</option>
@@ -79,13 +104,13 @@ const Body = () => {
             <option value="option3">720p</option>
             <option value="option3">1080p</option>
           </Select>
-          <Button colorScheme="red" w={"100%"}>
+          <Button colorScheme="red" w={"100%"} onClick={handleSubmit}>
             Download
           </Button>
-        </FormControl>
+        </form>
       </Box>
 
-      <Grid templateColumns="repeat(5, 1fr)" gap={7} margin={10} py={10}>
+      {/* <Grid templateColumns="repeat(5, 1fr)" gap={7} margin={10} py={10}>
         <Box
           bg={useColorModeValue("white", "gray.800")}
           maxW="sm"
@@ -116,7 +141,7 @@ const Body = () => {
             </Button>
           </Box>
         </Box>
-      </Grid>
+      </Grid> */}
     </>
   );
 };
