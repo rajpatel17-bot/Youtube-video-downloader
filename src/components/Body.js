@@ -21,22 +21,26 @@ import { useState } from "react";
 
 const Body = () => {
   const [videoURL, setvideoURL] = useState("");
+  const [data, setData] = useState();
+  const [formats, setFormats] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const config = {
       headers: {
-        "Content-type": "application/json",
+        "Content-Type": "application/json",
       },
     };
     try {
-      const { data } = await axios.get(
-        "action/fetchVideoInfo",
-        { videoURL: videoURL },
+      const data = await axios.get(
+        `/action/fetchVideoInfo?URL=${videoURL}/`,
         config
       );
       console.log(data);
+      setFormats(data.data.formats);
+      setData(data);
     } catch (error) {
+      // @ts-ignore
       console.log(error.response);
     }
   };
@@ -97,12 +101,12 @@ const Body = () => {
             onChange={(e) => setvideoURL(e.target.value)}
           />
           <Select placeholder="Select quality" my={5}>
-            <option value="option1">144p</option>
-            <option value="option2">240p</option>
-            <option value="option3">360p</option>
-            <option value="option3">480p</option>
-            <option value="option3">720p</option>
-            <option value="option3">1080p</option>
+            {formats.map(
+              (format) =>
+                format.mimeType.includes("video/mp4") && (
+                  <option> {format.qualityLabel} </option>
+                )
+            )}
           </Select>
           <Button colorScheme="red" w={"100%"} onClick={handleSubmit}>
             Download
@@ -110,38 +114,44 @@ const Body = () => {
         </form>
       </Box>
 
-      {/* <Grid templateColumns="repeat(5, 1fr)" gap={7} margin={10} py={10}>
-        <Box
-          bg={useColorModeValue("white", "gray.800")}
-          maxW="sm"
-          borderWidth="1px"
-          rounded="lg"
-          shadow="lg"
-          position="relative"
-        >
-          <Image
-            src={data.imageURL}
-            alt={`Picture of ${data.name}`}
-            roundedTop="lg"
-          />
-          <Box p="6">
-            <Flex mt="1" justifyContent="space-between" alignContent="center">
-              <Box
-                fontSize="lg"
-                fontWeight="semibold"
-                as="h4"
-                lineHeight="tight"
-                isTruncated
-              >
-                {data.name}
-              </Box>
-            </Flex>
-            <Button colorScheme="red" w={"100%"} marginTop={4}>
-              Download
-            </Button>
+      <Grid templateColumns="repeat(5, 1fr)" gap={7} margin={10} py={10}>
+        {!data ? (
+          "Nothing found"
+        ) : (
+          <Box
+            // bg={useColorModeValue("white", "gray.800")}
+            maxW="sm"
+            borderWidth="1px"
+            rounded="lg"
+            shadow="lg"
+            position="relative"
+          >
+            <Image
+              // @ts-ignore
+              src={data.data.videoDetails.thumbnails[3].url}
+              alt={`Picture of ${data}`}
+              roundedTop="lg"
+            />
+            <Box p="6">
+              <Flex mt="1" justifyContent="space-between" alignContent="center">
+                <Box
+                  fontSize="lg"
+                  fontWeight="semibold"
+                  as="h4"
+                  lineHeight="tight"
+                  // isTruncated
+                >
+                  {/* @ts-ignore */}
+                  {data.data.videoDetails.title}
+                </Box>
+              </Flex>
+              <Button colorScheme="red" w={"100%"} marginTop={4}>
+                Download
+              </Button>
+            </Box>
           </Box>
-        </Box>
-      </Grid> */}
+        )}
+      </Grid>
     </>
   );
 };
