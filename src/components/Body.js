@@ -5,26 +5,24 @@ import {
   Input,
   Select,
   Text,
-  useColorModeValue,
+  // useColorModeValue,
   Grid,
+  Stack,
+  Badge,
 } from "@chakra-ui/react";
 import { Image } from "@chakra-ui/react";
 import { Button } from "@chakra-ui/react";
 import axios from "axios";
 import { useState } from "react";
-
-// const data = {
-//   imageURL:
-//     "https://i.ytimg.com/vi/rDdWkKg3-Ms/hq720.jpg?sqp=-oaymwEcCNAFEJQDSFXyq4qpAw4IARUAAIhCGAFwAcABBg==&rs=AOn4CLAjjamaqeCJeTXSVFnfoMliLVRMbA",
-//   name: "SC का बड़ा आदेश - Hindu Muslim पर भड़काऊ बयान दिया, तो आपके साथ ये होगा! The Lallantop Show",
-// };
+import qualities from "./videoQuality";
 
 const Body = () => {
   const [videoURL, setvideoURL] = useState("");
   const [data, setData] = useState();
-  const [formats, setFormats] = useState([]);
+  const [itag, setItag] = useState();
+  // const [format, setFormat] = useState();
 
-  const handleSubmit = async (e) => {
+  const getVideo = async (e) => {
     e.preventDefault();
     const config = {
       headers: {
@@ -33,14 +31,42 @@ const Body = () => {
     };
     try {
       const data = await axios.get(
-        `/action/fetchVideoInfo?URL=${videoURL}/`,
+        `/action/fetchVideoInfo?URL=${videoURL}`,
         config
       );
       console.log(data);
-      setFormats(data.data.formats);
       setData(data);
+      // data.data.formats.map((format) => (
+      //   console.log(format.itag === itag ? "format.url" : "dd")
+      //   // format.itag === itag ? setFormat(format) : setFormat() 
+      // ))
+      // console.log(format);
     } catch (error) {
-      // @ts-ignore
+      console.log(error.response);
+    }
+  };
+
+  const selectQuality = async (e) => {
+    e.preventDefault();
+    setItag(e.target.value);
+  };
+
+  const download = async (e) => {
+    e.preventDefault();
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const data = await axios.get(
+        `/action/downloadVideo?itag=${itag}&videoURL=${videoURL}`,
+        config
+      );
+      console.log(data.data.url);
+      console.log(data);
+      // window.location.href = data.data.url;
+    } catch (error) {
       console.log(error.response);
     }
   };
@@ -92,7 +118,7 @@ const Body = () => {
           below-
         </Heading>
 
-        <form style={{ marginTop: "1rem" }} onSubmit={handleSubmit}>
+        <form style={{ marginTop: "1rem" }} onSubmit={getVideo}>
           <Input
             type="text"
             placeholder="Please paste your link here!"
@@ -100,16 +126,13 @@ const Body = () => {
             value={videoURL}
             onChange={(e) => setvideoURL(e.target.value)}
           />
-          <Select placeholder="Select quality" my={5}>
-            {formats.map(
-              (format) =>
-                format.mimeType.includes("video/mp4") && (
-                  <option> {format.qualityLabel} </option>
-                )
-            )}
+          <Select placeholder="Select quality" my={5} onChange={selectQuality}>
+            {qualities.map((quality) => (
+              <option value={quality.itag}> {quality.qualityLabel} </option>
+            ))}
           </Select>
-          <Button colorScheme="red" w={"100%"} onClick={handleSubmit}>
-            Download
+          <Button colorScheme="red" w={"100%"} onClick={getVideo}>
+            Get Video
           </Button>
         </form>
       </Box>
@@ -120,32 +143,62 @@ const Body = () => {
         ) : (
           <Box
             // bg={useColorModeValue("white", "gray.800")}
-            maxW="sm"
+            minW="25rem"
             borderWidth="1px"
             rounded="lg"
             shadow="lg"
             position="relative"
           >
             <Image
-              // @ts-ignore
               src={data.data.videoDetails.thumbnails[3].url}
               alt={`Picture of ${data}`}
               roundedTop="lg"
+              w={"full"}
             />
-            <Box p="6">
+            <Badge variant="solid" colorScheme="cyan" marginLeft={4}>
+              {new Date(data.data.videoDetails.lengthSeconds * 1000)
+                .toISOString()
+                .substring(11, 19)}
+            </Badge>
+            <Badge
+              variant="solid"
+              colorScheme="pink"
+              marginRight={4}
+              float="right"
+              marginTop={1}
+            >
+              <a
+                href={data.data.videoDetails.author.user_url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                {data.data.videoDetails.author.name}
+              </a>
+            </Badge>
+            <Box p="4" paddingTop={0}>
               <Flex mt="1" justifyContent="space-between" alignContent="center">
                 <Box
                   fontSize="lg"
                   fontWeight="semibold"
                   as="h4"
                   lineHeight="tight"
-                  // isTruncated
+                  isTruncated
                 >
-                  {/* @ts-ignore */}
                   {data.data.videoDetails.title}
+                  <Stack direction="row" marginTop={2}>
+                    <Badge colorScheme="green" variant="solid">
+                      {data.data.videoDetails.uploadDate}
+                    </Badge>
+                    <Badge colorScheme="red" variant="solid">
+                      Views : {data.data.videoDetails.viewCount}
+                    </Badge>
+                    <Badge colorScheme="purple" variant="solid">
+                      {data.data.videoDetails.category}
+                    </Badge>
+                  </Stack>
                 </Box>
               </Flex>
-              <Button colorScheme="red" w={"100%"} marginTop={4}>
+              <Button colorScheme="red" w={"100%"} marginTop={4} onClick={download}>
                 Download
               </Button>
             </Box>

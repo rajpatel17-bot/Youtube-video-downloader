@@ -1,8 +1,0 @@
-// {
-//     "compilerOptions": {
-//         "checkJs": true,
-//         "strict": true,
-//         "jsx": "react-jsx",
-//         "noImplicitAny": false
-//     }
-// }
