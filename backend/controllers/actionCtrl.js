@@ -41,7 +41,9 @@ const actionCtrl = {
 
       let output = 'output.mp4';
 
-      let resp = exec(`ffmpg -safe 0 -f -i ${audioURL} -i ${videoResURL} -c:v copy -c:a aac -map 0:v -map 1:a ${output}`);
+      let resp = exec(
+        `ffmpeg -i ${videoResURL} -i ${audioURL} -c:v copy -c:a aac ${output} + "mp4"`
+      );
 
       console.log(output);
 
@@ -49,7 +51,7 @@ const actionCtrl = {
 
       // console.log(audioURL);
       // console.log(videoResURL);
-      
+
     } catch (error) {
       console.log(error.message);
     }
