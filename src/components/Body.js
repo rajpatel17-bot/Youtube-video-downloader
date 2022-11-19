@@ -20,7 +20,8 @@ const Body = () => {
   const [videoURL, setvideoURL] = useState("");
   const [data, setData] = useState();
   const [itag, setItag] = useState();
-  // const [format, setFormat] = useState();
+  const [audioURL, setAudioUrl] = useState();
+  const [videoResURL, setVideoResUrl] = useState();
 
   const getVideo = async (e) => {
     e.preventDefault();
@@ -38,7 +39,7 @@ const Body = () => {
       setData(data);
       // data.data.formats.map((format) => (
       //   console.log(format.itag === itag ? "format.url" : "dd")
-      //   // format.itag === itag ? setFormat(format) : setFormat() 
+      //   // format.itag === itag ? setFormat(format) : setFormat()
       // ))
       // console.log(format);
     } catch (error) {
@@ -51,7 +52,7 @@ const Body = () => {
     setItag(e.target.value);
   };
 
-  const download = async (e) => {
+  const getDownloadInfo = async (e) => {
     e.preventDefault();
     const config = {
       headers: {
@@ -60,12 +61,35 @@ const Body = () => {
     };
     try {
       const data = await axios.get(
-        `/action/downloadVideo?itag=${itag}&videoURL=${videoURL}`,
+        `/action/getDownloadInfo?itag=${itag}&videoURL=${videoURL}`,
         config
       );
-      console.log(data.data.url);
+
+      setVideoResUrl(data.data.format.url);
+      setAudioUrl(data.data.audio[1].url);
+
+      console.log(videoResURL);
+      console.log(audioURL);
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
+
+  const mergeAudioVideo = async (e) => {
+    e.preventDefault();
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const data = await axios.post(
+        `/action/mergeAudioVideo`,
+        { audioURL, videoResURL },
+        config
+      );
       console.log(data);
-      // window.location.href = data.data.url;
+      
     } catch (error) {
       console.log(error.response);
     }
@@ -198,8 +222,19 @@ const Body = () => {
                   </Stack>
                 </Box>
               </Flex>
-              <Button colorScheme="red" w={"100%"} marginTop={4} onClick={download}>
-                Download
+              <Button
+                colorScheme="red"
+                w={"100%"}
+                marginTop={4}
+                onClick={
+                  videoResURL === undefined && audioURL === undefined
+                    ? getDownloadInfo
+                    : mergeAudioVideo
+                }
+              >
+                {videoResURL === undefined && audioURL === undefined
+                  ? "Get Download Info"
+                  : "Merge Audio & Video"}
               </Button>
             </Box>
           </Box>
